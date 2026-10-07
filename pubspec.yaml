@@ -1,0 +1,54 @@
+name: speed_test
+description: Internet speed test app
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+  connectivity_plus: ^6.0.0
+  shared_preferences: ^2.2.0
+  package_info_plus: ^8.0.0
+  url_launcher: ^6.3.0
+  unity_levelplay_mediation: '>=9.3.0 <9.4.0'
+  share_plus: '>=10.1.0 <11.0.0'
+  path_provider: ^2.1.0
+  in_app_review: ^2.0.9
+
+dev_dependencies:
+  flutter_launcher_icons: ^0.14.1
+  flutter_native_splash: ^2.4.1
+
+flutter:
+  uses-material-design: true
+
+# ---------------------------------------------------------------------------
+# YOUR LOGO
+# Replace the two files below with your own logo, keeping the same file names,
+# then run:
+#   dart run flutter_launcher_icons
+#   dart run flutter_native_splash:create
+# If you use other file names, change ONLY the three paths marked (*).
+#
+#   assets/logo/logo.png             1024x1024 PNG, square, full background
+#   assets/logo/logo_foreground.png  1024x1024 PNG, transparent background,
+#                                    logo kept inside the centre 66% (Android adaptive icon)
+# ---------------------------------------------------------------------------
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo/logo.png"                              # (*)
+  adaptive_icon_background: "#0A0A0A"                             # background colour behind the logo
+  adaptive_icon_foreground: "assets/logo/logo_foreground.png"     # (*)
+  remove_alpha_ios: true
+
+flutter_native_splash:
+  color: "#0A0A0A"
+  image: "assets/logo/logo_foreground.png"                        # (*) splash logo
+  android_12:
+    color: "#0A0A0A"
+    image: "assets/logo/logo_foreground.png"

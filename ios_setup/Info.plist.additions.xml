@@ -1,0 +1,19 @@
+<!--
+Add these inside the top-level <dict> of ios/Runner/Info.plist.
+Also set the Bundle Identifier to com.albonik.speedtest in Xcode
+(Runner > Signing & Capabilities) and use the same ID in LevelPlay and App Store Connect.
+-->
+
+<!-- App Tracking Transparency prompt text (shown before the iOS ad identifier is used) -->
+<key>NSUserTrackingUsageDescription</key>
+<string>Your choice lets us show ads that are more relevant to you. The app works the same if you say no.</string>
+
+<!--
+SKAdNetwork: copy the full <key>SKAdNetworkItems</key> array from the Unity LevelPlay
+iOS integration docs (it lists the ad networks' identifiers) and paste it here.
+Without it, iOS ad attribution may not work.
+-->
+
+<!-- Export compliance: the app uses only standard HTTPS/WSS encryption -->
+<key>ITSAppUsesNonExemptEncryption</key>
+<false/>
