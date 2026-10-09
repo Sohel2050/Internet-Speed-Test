@@ -1,3 +1,4 @@
+import 'ads.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -198,7 +199,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 child: const Text('Cancel')),
             FilledButton(
               style: FilledButton.styleFrom(
-                  backgroundColor: kLime, foregroundColor: Colors.black),
+                  backgroundColor: kLime, foregroundColor: kOnLime),
               onPressed: () => Navigator.pop(ctx, true),
               child: const Text('Watch ad'),
             ),
@@ -231,7 +232,7 @@ class _HistoryPageState extends State<HistoryPage> {
               child: const Text('Cancel')),
           FilledButton(
             style: FilledButton.styleFrom(
-                backgroundColor: kLime, foregroundColor: Colors.black),
+                backgroundColor: kLime, foregroundColor: kOnLime),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Delete'),
           ),
@@ -260,7 +261,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   child: Container(
                     width: 46,
                     height: 46,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                         color: kTile, shape: BoxShape.circle),
                     child: const Icon(Icons.arrow_back, size: 22),
                   ),
@@ -272,12 +273,12 @@ class _HistoryPageState extends State<HistoryPage> {
                 const Spacer(),
                 IconButton(
                   tooltip: 'Export CSV',
-                  icon: const Icon(Icons.file_download_outlined, color: kMuted),
+                  icon: Icon(Icons.file_download_outlined, color: kMuted),
                   onPressed: (list == null || list.isEmpty) ? null : _export,
                 ),
                 IconButton(
                   tooltip: 'Clear history',
-                  icon: const Icon(Icons.delete_outline, color: kMuted),
+                  icon: Icon(Icons.delete_outline, color: kMuted),
                   onPressed: (list == null || list.isEmpty) ? null : _clear,
                 ),
               ]),
@@ -294,7 +295,7 @@ class _HistoryPageState extends State<HistoryPage> {
       return const Center(child: CircularProgressIndicator());
     }
     if (list.isEmpty) {
-      return const Center(
+      return Center(
         child: Text('No tests yet.\nRun a test and it will show up here.',
             textAlign: TextAlign.center,
             style: TextStyle(color: kMuted, fontSize: 16)),
@@ -318,7 +319,7 @@ class _HistoryPageState extends State<HistoryPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Download, last ${values.length} tests (Mbps)',
-                  style: const TextStyle(color: kMuted, fontSize: 14)),
+                  style: TextStyle(color: kMuted, fontSize: 14)),
               const SizedBox(height: 12),
               SizedBox(
                 height: 110,
@@ -339,6 +340,7 @@ class _HistoryPageState extends State<HistoryPage> {
         ),
         const SizedBox(height: 14),
         const NativeAdBox(),
+        const MrecAdBox(),
         for (final r in list) _tile(r),
       ],
     );
@@ -349,13 +351,13 @@ class _HistoryPageState extends State<HistoryPage> {
         decoration: BoxDecoration(
             color: kTile, borderRadius: BorderRadius.circular(16)),
         child: Row(children: [
-          const Icon(Icons.data_usage, color: kMuted),
+          Icon(Icons.data_usage, color: kMuted),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Data used by speed tests',
+                Text('Data used by speed tests',
                     style: TextStyle(color: kMuted, fontSize: 13)),
                 const SizedBox(height: 2),
                 Text(
@@ -370,7 +372,7 @@ class _HistoryPageState extends State<HistoryPage> {
   Widget _stat(String t, double v) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(t, style: const TextStyle(color: kMuted, fontSize: 13)),
+          Text(t, style: TextStyle(color: kMuted, fontSize: 13)),
           Text(v.toStringAsFixed(1),
               style:
                   const TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
@@ -392,7 +394,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(fmtTime(r.time),
-                      style: const TextStyle(color: kMuted, fontSize: 13)),
+                      style: TextStyle(color: kMuted, fontSize: 13)),
                   const SizedBox(height: 4),
                   Wrap(spacing: 14, runSpacing: 4, children: [
                     _val(Icons.arrow_downward, kLime, r.down.toStringAsFixed(1)),
@@ -403,7 +405,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   const SizedBox(height: 4),
                   Text(
                       '${r.server} - ${r.engine}${r.dataBytes > 0 ? ' - ${fmtBytes(r.dataBytes)}' : ''}',
-                      style: const TextStyle(color: kMuted, fontSize: 12)),
+                      style: TextStyle(color: kMuted, fontSize: 12)),
                 ],
               ),
             ),

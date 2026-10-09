@@ -4,9 +4,11 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'ads.dart';
+import 'app_info.dart';
 import 'config.dart';
 import 'consent.dart';
 import 'history.dart';
+import 'theme_controller.dart';
 import 'theme.dart';
 
 /// Side menu: history, privacy, store links, contact, licenses.
@@ -53,42 +55,68 @@ class AppDrawer extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
               child: Row(children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: const BoxDecoration(
-                      color: kTile, shape: BoxShape.circle),
-                  child: const Icon(Icons.speed, size: 26, color: kLime),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Image.asset('assets/logo/logo.png',
+                      width: 56, height: 56, fit: BoxFit.cover),
                 ),
                 const SizedBox(width: 14),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Speed Test',
-                        style: TextStyle(
+                    Text(appName,
+                        style: const TextStyle(
                             fontSize: 22, fontWeight: FontWeight.w500)),
                     FutureBuilder<PackageInfo>(
                       future: PackageInfo.fromPlatform(),
                       builder: (c, s) => Text(
                           s.hasData ? 'Version ${s.data!.version}' : '',
-                          style: const TextStyle(color: kMuted, fontSize: 13)),
+                          style: TextStyle(color: kMuted, fontSize: 13)),
                     ),
                   ],
                 ),
               ]),
             ),
-            const Divider(color: kLine, height: 1),
+            Divider(color: kLine, height: 1),
             Expanded(
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: [
+                  // Home = current screen (drawer only opens from Home), so it is
+                  // shown highlighted in the app's lime colour.
+                  ListTile(
+                    tileColor: kTile,
+                    leading: Icon(Icons.home_rounded, color: kLime),
+                    title: Text('Home',
+                        style: TextStyle(
+                            color: kLime, fontWeight: FontWeight.w500)),
+                    onTap: () => Navigator.pop(context),
+                  ),
                   _tile(context, Icons.history, 'History', () {
                     Navigator.push(
                         pageContext,
                         MaterialPageRoute(
                             builder: (_) => const HistoryPage()));
                   }),
-                  const Divider(color: kLine, height: 1),
+                  ListenableBuilder(
+                    listenable: ThemeController.instance,
+                    builder: (context, _) {
+                      final light = isLightPalette;
+                      return SwitchListTile(
+                        // Shows the mode you will switch TO.
+                        secondary: Icon(
+                            light ? Icons.nightlight_round : Icons.light_mode,
+                            color: kMuted),
+                        title: Text(light ? 'Night mode' : 'Light mode'),
+                        // Always OFF: it is a one-tap switch to the other mode,
+                        // the label shows which mode it switches to.
+                        value: false,
+                        onChanged: (_) => ThemeController.instance
+                            .set(light ? ThemeMode.dark : ThemeMode.light),
+                      );
+                    },
+                  ),
+                  Divider(color: kLine, height: 1),
                   if (AdsService.instance.configured)
                     _tile(context, Icons.shield_outlined, 'Privacy settings',
                         () => ConsentService.instance.showSettings(pageContext)),
@@ -96,14 +124,14 @@ class AppDrawer extends StatelessWidget {
                       () => _open(kPrivacyUrl)),
                   _tile(context, Icons.public, 'M-Lab data policy',
                       () => _open(kMlabPolicyUrl)),
-                  const Divider(color: kLine, height: 1),
+                  Divider(color: kLine, height: 1),
                   if (showStore)
                     _tile(context, Icons.star_outline, 'Rate this app',
                         () => _open(_storeUrl)),
                   if (showStore)
                     _tile(context, Icons.share_outlined, 'Share this app', () {
                       Share.share(
-                          'Check your internet speed with Speed Test: $_storeUrl');
+                          'Check your internet speed with $appName: $_storeUrl');
                     }),
                   if (!isPlaceholder(_moreAppsUrl))
                     _tile(context, Icons.apps, 'More apps',
@@ -113,7 +141,7 @@ class AppDrawer extends StatelessWidget {
                   _tile(context, Icons.description_outlined,
                       'Open source licenses', () {
                     showLicensePage(
-                        context: pageContext, applicationName: 'Speed Test');
+                        context: pageContext, applicationName: appName);
                   }),
                 ],
               ),

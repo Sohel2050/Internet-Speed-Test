@@ -50,10 +50,10 @@ class PlanCard extends StatelessWidget {
                     style: const TextStyle(
                         fontSize: 17, fontWeight: FontWeight.w500)),
               ),
-              const Icon(Icons.edit_outlined, size: 18, color: kMuted),
+              Icon(Icons.edit_outlined, size: 18, color: kMuted),
             ]),
             const SizedBox(height: 4),
-            Text(sub, style: const TextStyle(color: kMuted, fontSize: 14)),
+            Text(sub, style: TextStyle(color: kMuted, fontSize: 14)),
             if (plan > 0 && showResult)
               Padding(
                 padding: const EdgeInsets.only(top: 12),
@@ -63,7 +63,7 @@ class PlanCard extends StatelessWidget {
                     value: (pct / 100).clamp(0.0, 1.0),
                     minHeight: 8,
                     color: color,
-                    backgroundColor: const Color(0xFF262626),
+                    backgroundColor: kTrack,
                   ),
                 ),
               ),
@@ -134,7 +134,7 @@ class InsightsCard extends StatelessWidget {
           const Text('What will work',
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500)),
           const SizedBox(height: 4),
-          const Text('Based on this test. A rough guide only.',
+          Text('Based on this test. A rough guide only.',
               style: TextStyle(color: kMuted, fontSize: 13)),
           const SizedBox(height: 8),
           for (final c in _cases)

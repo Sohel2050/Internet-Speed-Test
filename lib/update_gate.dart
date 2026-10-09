@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'config.dart';
+import 'splash.dart';
 import 'theme.dart';
 
 /// Compares "1.2.3" style versions. <0 if a<b, 0 if equal, >0 if a>b.
@@ -47,10 +48,32 @@ class _UpdateGateState extends State<UpdateGate> {
   String _message = '';
   String _storeUrl = '';
 
+  // Splash: shown at least ~1.2s, until the update check is done, never
+  // longer than 3s.
+  bool _showSplash = true;
+  bool _checkDone = false;
+  bool _minDone = false;
+
   @override
   void initState() {
     super.initState();
-    _check();
+    _check().whenComplete(() {
+      _checkDone = true;
+      _maybeEndSplash();
+    });
+    Future.delayed(const Duration(milliseconds: 1200), () {
+      _minDone = true;
+      _maybeEndSplash();
+    });
+    Future.delayed(const Duration(seconds: 3), _endSplash);
+  }
+
+  void _maybeEndSplash() {
+    if (_checkDone && _minDone) _endSplash();
+  }
+
+  void _endSplash() {
+    if (mounted && _showSplash) setState(() => _showSplash = false);
   }
 
   Future<void> _check() async {
@@ -99,7 +122,7 @@ class _UpdateGateState extends State<UpdateGate> {
               onPressed: () => Navigator.pop(ctx), child: const Text('Later')),
           FilledButton(
             style: FilledButton.styleFrom(
-                backgroundColor: kLime, foregroundColor: Colors.black),
+                backgroundColor: kLime, foregroundColor: kOnLime),
             onPressed: () {
               Navigator.pop(ctx);
               openStore(url);
@@ -117,7 +140,7 @@ class _UpdateGateState extends State<UpdateGate> {
       canPop: !_force,
       child: Stack(
         children: [
-          widget.child,
+          if (_showSplash) const AppSplash() else widget.child,
           if (_force)
             Positioned.fill(
               child: Scaffold(
@@ -128,7 +151,7 @@ class _UpdateGateState extends State<UpdateGate> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.system_update, size: 72, color: kLime),
+                        Icon(Icons.system_update, size: 72, color: kLime),
                         const SizedBox(height: 24),
                         const Text('Update required',
                             style: TextStyle(
@@ -137,7 +160,7 @@ class _UpdateGateState extends State<UpdateGate> {
                         Text(_message,
                             textAlign: TextAlign.center,
                             style:
-                                const TextStyle(color: kMuted, fontSize: 16)),
+                                TextStyle(color: kMuted, fontSize: 16)),
                         const SizedBox(height: 32),
                         SizedBox(
                           width: double.infinity,
@@ -145,7 +168,7 @@ class _UpdateGateState extends State<UpdateGate> {
                           child: FilledButton(
                             style: FilledButton.styleFrom(
                               backgroundColor: kLime,
-                              foregroundColor: Colors.black,
+                              foregroundColor: kOnLime,
                               shape: const StadiumBorder(),
                             ),
                             onPressed: () => openStore(_storeUrl),

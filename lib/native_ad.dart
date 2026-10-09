@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:unity_levelplay_mediation/unity_levelplay_mediation.dart';
 import 'ads.dart';
+import 'config.dart';
 import 'theme.dart';
 
 /// One small native ad slot (used in the History screen).
@@ -25,6 +26,7 @@ class _NativeAdBoxState extends State<NativeAdBox>
   }
 
   void _create() {
+    if (!kEnableNativeAd) return;
     if (_nativeAd != null || !AdsService.instance.ready.value) return;
     _nativeAd = LevelPlayNativeAd.builder().withListener(this).build();
   }
@@ -44,7 +46,7 @@ class _NativeAdBoxState extends State<NativeAdBox>
 
   @override
   Widget build(BuildContext context) {
-    if (_failed) return const SizedBox.shrink();
+    if (!kEnableNativeAd || _failed) return const SizedBox.shrink();
     if (_nativeAd == null) {
       return kDebugMode
           ? const Padding(

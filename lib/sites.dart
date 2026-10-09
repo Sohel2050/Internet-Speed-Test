@@ -91,10 +91,10 @@ class _SiteLatencyCardState extends State<SiteLatencyCard> {
             TextButton(
               onPressed: (_running || !widget.enabled) ? null : _run,
               child: Text(_hasRun ? 'Run again' : 'Check',
-                  style: const TextStyle(color: kLime)),
+                  style: TextStyle(color: kLime)),
             ),
           ]),
-          const Text(
+          Text(
               'Response time of each site from your connection. A site that does not respond may be slow or blocked.',
               style: TextStyle(color: kMuted, fontSize: 13)),
           const SizedBox(height: 8),
@@ -116,7 +116,7 @@ class _SiteLatencyCardState extends State<SiteLatencyCard> {
 
   Widget _trailing(_Site s) {
     if (!_hasRun) {
-      return const Text('--', style: TextStyle(color: kMuted));
+      return Text('--', style: TextStyle(color: kMuted));
     }
     if (!_done.contains(s.name)) {
       return const SizedBox(

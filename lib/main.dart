@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'ads.dart';
 import 'app_drawer.dart';
+import 'app_info.dart';
 import 'config.dart';
 import 'consent.dart';
 import 'engines.dart';
@@ -17,26 +18,88 @@ import 'models.dart';
 import 'review.dart';
 import 'share_card.dart';
 import 'sites.dart';
+import 'theme_controller.dart';
 import 'theme.dart';
 import 'update_gate.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await loadAppInfo();
+  await ThemeController.instance.load();
   runApp(const SpeedApp());
 }
 
-class SpeedApp extends StatelessWidget {
+class SpeedApp extends StatefulWidget {
   const SpeedApp({super.key});
   @override
-  Widget build(BuildContext context) => MaterialApp(
-        title: 'Speed Test',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData.dark(useMaterial3: true).copyWith(
-          scaffoldBackgroundColor: kBg,
-          colorScheme: const ColorScheme.dark(primary: kLime),
-        ),
-        home: const UpdateGate(child: SpeedPage()),
-      );
+  State<SpeedApp> createState() => _SpeedAppState();
+}
+
+class _SpeedAppState extends State<SpeedApp> with WidgetsBindingObserver {
+  Brightness get _brightness {
+    final m = ThemeController.instance.mode;
+    if (m == ThemeMode.light) return Brightness.light;
+    if (m == ThemeMode.dark) return Brightness.dark;
+    return WidgetsBinding.instance.platformDispatcher.platformBrightness;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    ThemeController.instance.addListener(_changed);
+    applyPalette(_brightness);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    ThemeController.instance.removeListener(_changed);
+    super.dispose();
+  }
+
+  @override
+  void didChangePlatformBrightness() => _changed();
+
+  void _changed() {
+    applyPalette(_brightness);
+    if (!mounted) return;
+    setState(() {});
+    // Colours are read from the palette (not from Theme), so force every
+    // widget to rebuild once after the theme switched.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      void rebuild(Element e) {
+        e.markNeedsBuild();
+        e.visitChildren(rebuild);
+      }
+
+      (context as Element).visitChildren(rebuild);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    applyPalette(_brightness);
+    final light = isLightPalette;
+    SystemChrome.setSystemUIOverlayStyle(light
+        ? SystemUiOverlayStyle.dark
+        : SystemUiOverlayStyle.light);
+    return MaterialApp(
+      title: appName,
+      debugShowCheckedModeBanner: false,
+      themeMode: light ? ThemeMode.light : ThemeMode.dark,
+      theme: ThemeData.light(useMaterial3: true).copyWith(
+        scaffoldBackgroundColor: kBg,
+        colorScheme: ColorScheme.light(primary: kLime),
+      ),
+      darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
+        scaffoldBackgroundColor: kBg,
+        colorScheme: ColorScheme.dark(primary: kLime),
+      ),
+      home: const UpdateGate(child: SpeedPage()),
+    );
+  }
 }
 
 enum EngineKind { cloudflare, mlab }
@@ -123,7 +186,7 @@ class _SpeedPageState extends State<SpeedPage> {
               child: const Text('Cancel')),
           FilledButton(
             style: FilledButton.styleFrom(
-                backgroundColor: kLime, foregroundColor: Colors.black),
+                backgroundColor: kLime, foregroundColor: kOnLime),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('I agree'),
           ),
@@ -271,7 +334,7 @@ class _SpeedPageState extends State<SpeedPage> {
                   suffixText: 'Mbps', hintText: 'e.g. 50'),
             ),
             const SizedBox(height: 10),
-            const Text(
+            Text(
                 'Use megabits per second (Mbps) as written on your plan. 50 Mbps is about 6 MB/s.',
                 style: TextStyle(color: kMuted, fontSize: 13)),
           ],
@@ -286,7 +349,7 @@ class _SpeedPageState extends State<SpeedPage> {
               child: const Text('Cancel')),
           FilledButton(
             style: FilledButton.styleFrom(
-                backgroundColor: kLime, foregroundColor: Colors.black),
+                backgroundColor: kLime, foregroundColor: kOnLime),
             onPressed: () => Navigator.pop(
                 ctx, double.tryParse(controller.text.trim().replaceAll(',', '.'))),
             child: const Text('Save'),
@@ -356,20 +419,19 @@ class _SpeedPageState extends State<SpeedPage> {
       drawer: AppDrawer(pageContext: context),
       bottomNavigationBar: const SafeArea(child: BannerAdBox()),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
           children: [
             _header(),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             _engineSwitch(running),
-            const SizedBox(height: 12),
-            Center(
-              child: Text(_label,
-                  style: TextStyle(
-                      color: running ? kLime : kMuted, fontSize: 14)),
-            ),
+            const SizedBox(height: 8),
             SizedBox(
-              height: 280,
+              height: (MediaQuery.of(context).size.height * 0.26)
+                  .clamp(180.0, 250.0),
               child: TweenAnimationBuilder<double>(
                 tween: Tween<double>(begin: 0, end: _frac(big)),
                 duration: const Duration(milliseconds: 350),
@@ -378,16 +440,16 @@ class _SpeedPageState extends State<SpeedPage> {
                   painter: GaugePainter(f),
                   child: Center(
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 24),
+                      padding: const EdgeInsets.only(top: 16),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(big.toStringAsFixed(1),
-                              style: const TextStyle(
-                                  fontSize: 64,
+                              style: TextStyle(
+                                  fontSize: 56,
                                   fontWeight: FontWeight.w500,
-                                  color: Colors.white)),
-                          const Text('Mbps',
+                                  color: kText)),
+                          Text('Mbps',
                               style: TextStyle(fontSize: 16, color: kMuted)),
                         ],
                       ),
@@ -397,24 +459,24 @@ class _SpeedPageState extends State<SpeedPage> {
               ),
             ),
             _speedRow(),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Row(children: [
               _tile('Ping', ping == 0 ? '--' : '${ping.round()} ms'),
               const SizedBox(width: 12),
               _tile('Jitter', jitter == 0 ? '--' : '${jitter.round()} ms'),
             ]),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Row(children: [
-              const Icon(Icons.public, color: kMuted, size: 22),
+              Icon(Icons.public, color: kMuted, size: 22),
               const SizedBox(width: 10),
               Flexible(
                 child: Text('Connected server: $server',
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: kMuted, fontSize: 15)),
+                    style: TextStyle(color: kMuted, fontSize: 15)),
               ),
             ]),
             if (network == 'Mobile data')
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 8),
                 child: Text('This test uses mobile data.',
                     style: TextStyle(color: kMuted, fontSize: 13)),
@@ -423,10 +485,10 @@ class _SpeedPageState extends State<SpeedPage> {
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Row(children: [
-                  const Icon(Icons.data_usage, size: 16, color: kMuted),
+                  Icon(Icons.data_usage, size: 16, color: kMuted),
                   const SizedBox(width: 6),
                   Text('Data used by this test: ${fmtBytes(_lastData)}',
-                      style: const TextStyle(color: kMuted, fontSize: 13)),
+                      style: TextStyle(color: kMuted, fontSize: 13)),
                 ]),
               ),
             if (error != null)
@@ -435,43 +497,6 @@ class _SpeedPageState extends State<SpeedPage> {
                 child: Text(error!,
                     style: const TextStyle(color: Colors.redAccent)),
               ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 60,
-              child: FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: kLime,
-                  disabledBackgroundColor: const Color(0xFF3C4D12),
-                  foregroundColor: Colors.black,
-                  shape: const StadiumBorder(),
-                ),
-                onPressed: running ? null : _start,
-                child: Text(
-                  running
-                      ? 'Testing...'
-                      : (phase == Phase.done ? 'Test again' : 'Start'),
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w500),
-                ),
-              ),
-            ),
-            if (phase == Phase.done) ...[
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 52,
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    shape: const StadiumBorder(),
-                    side: const BorderSide(color: kLime),
-                    foregroundColor: kLime,
-                  ),
-                  onPressed: _openShare,
-                  icon: const Icon(Icons.share, size: 20),
-                  label: const Text('Share result',
-                      style: TextStyle(fontSize: 17)),
-                ),
-              ),
-            ],
             const SizedBox(height: 16),
             PlanCard(
               plan: plan,
@@ -485,6 +510,58 @@ class _SpeedPageState extends State<SpeedPage> {
             ],
             const SizedBox(height: 12),
             SiteLatencyCard(enabled: !running),
+          ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 2),
+              child: Text(_label,
+                  style: TextStyle(
+                      color: running ? kLime : kMuted, fontSize: 14)),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 6, 20, 28),
+              child: Row(children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 56,
+                    child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: kLime,
+                        disabledBackgroundColor: kLimeDisabled,
+                        foregroundColor: kOnLime,
+                        shape: const StadiumBorder(),
+                      ),
+                      onPressed: running ? null : _start,
+                      child: Text(
+                        running
+                            ? 'Testing...'
+                            : (phase == Phase.done ? 'Test again' : 'Start'),
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ),
+                ),
+                if (phase == Phase.done) ...[
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    height: 56,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        shape: const StadiumBorder(),
+                        side: BorderSide(color: kLime),
+                        foregroundColor: kLime,
+                      ),
+                      onPressed: _openShare,
+                      icon: const Icon(Icons.share, size: 20),
+                      label: const Text('Share',
+                          style: TextStyle(fontSize: 17)),
+                    ),
+                  ),
+                ],
+              ]),
+            ),
           ],
         ),
       ),
@@ -500,7 +577,7 @@ class _SpeedPageState extends State<SpeedPage> {
               width: 46,
               height: 46,
               decoration:
-                  const BoxDecoration(color: kTile, shape: BoxShape.circle),
+                  BoxDecoration(color: kTile, shape: BoxShape.circle),
               child: const Icon(Icons.menu, size: 22),
             ),
           ),
@@ -516,13 +593,13 @@ class _SpeedPageState extends State<SpeedPage> {
                 Flexible(
                   child: Text(network,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: kMuted, fontSize: 14)),
+                      style: TextStyle(color: kMuted, fontSize: 14)),
                 ),
               ]),
             ),
           IconButton(
             tooltip: 'History',
-            icon: const Icon(Icons.history, color: kMuted),
+            icon: Icon(Icons.history, color: kMuted),
             onPressed: () => Navigator.push(context,
                 MaterialPageRoute(builder: (_) => const HistoryPage())),
           ),
@@ -554,7 +631,7 @@ class _SpeedPageState extends State<SpeedPage> {
             child: Center(
               child: Text(t,
                   style: TextStyle(
-                    color: selected ? Colors.black : kMuted,
+                    color: selected ? kOnLime : kMuted,
                     fontWeight: FontWeight.w500,
                   )),
             ),
@@ -563,7 +640,7 @@ class _SpeedPageState extends State<SpeedPage> {
       );
 
   Widget _speedRow() => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border.symmetric(horizontal: BorderSide(color: kLine)),
         ),
         child: IntrinsicHeight(
@@ -571,7 +648,7 @@ class _SpeedPageState extends State<SpeedPage> {
             Expanded(
                 child:
                     _speedCell('Download', down, Icons.arrow_downward, kLime)),
-            const VerticalDivider(width: 1, color: kLine),
+            VerticalDivider(width: 1, color: kLine),
             Expanded(
                 child: _speedCell('Upload', up, Icons.arrow_upward, kOrange)),
           ]),
@@ -590,7 +667,7 @@ class _SpeedPageState extends State<SpeedPage> {
           Text(v == 0 ? '--' : v.toStringAsFixed(1),
               style:
                   const TextStyle(fontSize: 36, fontWeight: FontWeight.w500)),
-          const Text('Mbps', style: TextStyle(color: kMuted, fontSize: 15)),
+          Text('Mbps', style: TextStyle(color: kMuted, fontSize: 15)),
         ]),
       );
 
@@ -602,7 +679,7 @@ class _SpeedPageState extends State<SpeedPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(t, style: const TextStyle(color: kMuted, fontSize: 15)),
+              Text(t, style: TextStyle(color: kMuted, fontSize: 15)),
               const SizedBox(height: 4),
               Text(v,
                   style: const TextStyle(
@@ -628,7 +705,7 @@ class GaugePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 18
       ..strokeCap = StrokeCap.round
-      ..color = const Color(0xFF1E1E1E);
+      ..color = kTrack;
     final bar = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 18

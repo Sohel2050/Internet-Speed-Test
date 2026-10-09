@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'app_info.dart';
 import 'config.dart';
 import 'history.dart';
 import 'models.dart';
@@ -76,7 +77,7 @@ class _ShareCardDialogState extends State<ShareCardDialog> {
                 child: FilledButton.icon(
                   style: FilledButton.styleFrom(
                     backgroundColor: kLime,
-                    foregroundColor: Colors.black,
+                    foregroundColor: kOnLime,
                     minimumSize: const Size.fromHeight(52),
                     shape: const StadiumBorder(),
                   ),
@@ -116,18 +117,18 @@ class _ResultCard extends StatelessWidget {
               width: 34,
               height: 34,
               decoration:
-                  const BoxDecoration(color: kTile, shape: BoxShape.circle),
-              child: const Icon(Icons.speed, size: 18, color: kLime),
+                  BoxDecoration(color: kTile, shape: BoxShape.circle),
+              child: Icon(Icons.speed, size: 18, color: kLime),
             ),
             const SizedBox(width: 10),
-            const Text('Speed Test',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+            Text(appName,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
             const Spacer(),
             Text(fmtTime(r.time),
-                style: const TextStyle(color: kMuted, fontSize: 12)),
+                style: TextStyle(color: kMuted, fontSize: 12)),
           ]),
           const SizedBox(height: 28),
-          const Text('DOWNLOAD',
+          Text('DOWNLOAD',
               style: TextStyle(color: kMuted, fontSize: 12, letterSpacing: 1.5)),
           const SizedBox(height: 4),
           Row(
@@ -135,23 +136,23 @@ class _ResultCard extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(r.down.toStringAsFixed(1),
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 72,
                       fontWeight: FontWeight.w400,
                       color: kLime,
                       height: 1.1)),
               const SizedBox(width: 8),
-              const Text('Mbps',
+              Text('Mbps',
                   style: TextStyle(color: kMuted, fontSize: 18)),
             ],
           ),
           const SizedBox(height: 20),
-          const Divider(color: kLine, height: 1),
+          Divider(color: kLine, height: 1),
           const SizedBox(height: 16),
           Row(children: [
             _col('UPLOAD', r.up.toStringAsFixed(1), 'Mbps', kOrange),
-            _col('PING', '${r.ping.round()}', 'ms', Colors.white),
-            _col('JITTER', '${r.jitter.round()}', 'ms', Colors.white),
+            _col('PING', '${r.ping.round()}', 'ms', kText),
+            _col('JITTER', '${r.jitter.round()}', 'ms', kText),
           ]),
           const SizedBox(height: 20),
           Row(children: [
@@ -160,7 +161,7 @@ class _ResultCard extends StatelessWidget {
             Flexible(
               child: Text('${r.network} - ${r.server}',
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: kMuted, fontSize: 13)),
+                  style: TextStyle(color: kMuted, fontSize: 13)),
             ),
           ]),
         ],
@@ -173,13 +174,13 @@ class _ResultCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(t,
-                style: const TextStyle(
+                style: TextStyle(
                     color: kMuted, fontSize: 11, letterSpacing: 1.2)),
             const SizedBox(height: 4),
             Text(v,
                 style: TextStyle(
                     fontSize: 24, fontWeight: FontWeight.w500, color: c)),
-            Text(unit, style: const TextStyle(color: kMuted, fontSize: 12)),
+            Text(unit, style: TextStyle(color: kMuted, fontSize: 12)),
           ],
         ),
       );

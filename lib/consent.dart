@@ -71,7 +71,7 @@ class ConsentService {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'We show ads to keep this app free. Our ad partners may use '
                   'your device identifiers and approximate location to show '
                   'personalised ads and measure results.\n\n'
@@ -94,7 +94,7 @@ class ConsentService {
             ),
             FilledButton(
               style: FilledButton.styleFrom(
-                  backgroundColor: kLime, foregroundColor: Colors.black),
+                  backgroundColor: kLime, foregroundColor: kOnLime),
               onPressed: () => Navigator.pop(ctx, true),
               child: const Text('Allow'),
             ),
@@ -135,7 +135,7 @@ class ConsentService {
                       save(v);
                     },
                     title: const Text('Personalised ads & data sharing'),
-                    subtitle: const Text(
+                    subtitle: Text(
                         'Off = we withhold consent and tell ad partners not to sell or share your data.',
                         style: TextStyle(color: kMuted)),
                   ),
@@ -145,7 +145,7 @@ class ConsentService {
                     trailing: const Icon(Icons.open_in_new, size: 18),
                     onTap: () => _open(kPrivacyUrl),
                   ),
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(top: 4),
                     child: Text(
                         'Changes are fully applied the next time you open the app.',

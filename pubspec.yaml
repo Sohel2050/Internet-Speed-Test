@@ -20,11 +20,15 @@ dependencies:
   in_app_review: ^2.0.9
 
 dev_dependencies:
+  flutter_test:
+    sdk: flutter
   flutter_launcher_icons: ^0.14.1
   flutter_native_splash: ^2.4.1
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/logo/logo.png
 
 # ---------------------------------------------------------------------------
 # YOUR LOGO
@@ -42,13 +46,14 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/logo/logo.png"                              # (*)
-  adaptive_icon_background: "#0A0A0A"                             # background colour behind the logo
+  adaptive_icon_background: "#0A1A5C"                             # background colour behind the logo
   adaptive_icon_foreground: "assets/logo/logo_foreground.png"     # (*)
   remove_alpha_ios: true
 
 flutter_native_splash:
-  color: "#0A0A0A"
-  image: "assets/logo/logo_foreground.png"                        # (*) splash logo
+  color: "#06134A"
+  image: "assets/logo/splash.png"
+  fullscreen: true
   android_12:
-    color: "#0A0A0A"
-    image: "assets/logo/logo_foreground.png"
+    color: "#06134A"
+    image: "assets/logo/splash.png"
