@@ -46,8 +46,9 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/logo/logo.png"                              # (*)
-  adaptive_icon_background: "#0A1A5C"                             # background colour behind the logo
+  adaptive_icon_background: "#0A4FD6"                             # background colour behind the logo
   adaptive_icon_foreground: "assets/logo/logo_foreground.png"     # (*)
+  adaptive_icon_foreground_inset: 0   # 0 = do not shrink the logo again (default is 16)
   remove_alpha_ios: true
 
 flutter_native_splash:
